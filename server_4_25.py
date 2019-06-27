@@ -138,7 +138,7 @@ def process_and_send(client,address,data):#socket
         print("结果：",index)
         client.send(bytes(str(index)+'\n',encoding='utf8'))
 
-#接收收据
+#接收收据 当接收超过32000帧语音 
 def received_audio_thread(client,address):#socket    
     data=np.array([])
     fname=str(time.time())+".wav"
@@ -167,7 +167,7 @@ def received_audio_thread(client,address):#socket
             data=np.array([])
             f.close()
             print("输出前")
-            paths=myvad(fname,3)
+            paths=myvad(fname,3)#这个是py 语音活动检测  ，输入wav文件，返回一段语音中的有效部分 返回的是有效部分 的wav文件列表
             os.remove(fname)
             print("输出后")
             if len(paths)>0:
