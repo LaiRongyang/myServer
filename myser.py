@@ -1,5 +1,5 @@
-import argparse
-from SER import Train, Predict
+﻿import argparse
+from SER import  Predict
 from Utils import load_model
 model = load_model(load_model_name = 'SVM_LIBROSA', model_name = 'svm')
 
@@ -10,5 +10,5 @@ model = load_model(load_model_name = 'SVM_LIBROSA', model_name = 'svm')
  '''
 
 def get_emotion(path):
-    print(Predict(model, model_name = 'svm', file_path = path, feature_method = 'l'))
+    return(Predict(model, model_name = 'svm', file_path = path, feature_method = 'l'))
     

@@ -1,4 +1,4 @@
-import   myser
+﻿import   myser
 
 import threading
 import time
@@ -8,6 +8,7 @@ import tensorflow as tf
 from data.train_data import process_save_wav_sample
 from data.train_data import process_save_wav_sample_x
 from data.train_data import AudPreEmphasize
+from data.baidu_emotion import get_wav_emotion
 import wave
 import os
 import scipy.io.wavfile as wav
@@ -57,9 +58,15 @@ def ER(x):
 
 
 #处理数据，并发送结果
-def process_and_send(client,address,data):#socket
-    print("收到shuju",len(data))
-    result=np.round(ER(data),decimals=3)
+def process_and_send(client,address,filepath):#socket
+    result=myser.get_emotion(filepath)
+    #返回 CLASS_LABELS = ("angry", "fear", "happy", "neutral", "sad", "surprise")
+    result_str="SER_score angry:"+str(round(result[0],2))+','+"fear:"+str(round(result[1],2))+','+"happy:"+str(round(result[2],2))+','+"neutral:"+str(round(result[3],2))+','+ "sad:"+str(round(result[4],2))+','+"surprise:"+str(round(result[5],2))
+    result_str=result_str+get_wav_emotion(filepath)
+    client.send(bytes(result_str+'\n',encoding='utf8'))
+    os.remove(filepath)
+    
+'''  
     for i in result:
         #client.send(bytes(str(i)+'\n',encoding='utf8'))
         #只发送结果
@@ -68,7 +75,7 @@ def process_and_send(client,address,data):#socket
         index=j.index(max(j))
         print("结果：",index)
         client.send(bytes(str(index)+'\n',encoding='utf8'))
-
+'''
 #接收收据 当接收超过32000帧语音 
 def received_audio_thread(client,address):#socket    
     data=np.array([])
@@ -102,6 +109,7 @@ def received_audio_thread(client,address):#socket
             os.remove(fname)
             print("输出后")
             if len(paths)>0:
+                
                 #frames=[]
                 #frames=np.array(frames)   
                 #for file in paths:    
@@ -109,11 +117,22 @@ def received_audio_thread(client,address):#socket
                     #frames=np.concatenate((frames,wav.read(file)[1]),axis=0)
                 #print(frames.shape)
                 #frames=AudPreEmphasize(frames)
-                outfile_name=str(time.time())+".wav"
-                cbn.build(paths,outfile_name,'concatenate')#合并文件
+                if(len(paths)>1):
+                    outfile_name=str(time.time())+".wav"
+                    cbn.build(paths,outfile_name,'concatenate')#合并文件
+                    print("合并完成")
+                    thread=threading.Thread(target=process_and_send,args=(client,address,outfile_name))
+                    thread.start()
+                    
+                else:
+                    #TODO
+                    print("1")
+                    thread=threading.Thread(target=process_and_send,args=(client,address,paths[0]))
+                    thread.start()
+                
                 #开一个线程，
-                thread=threading.Thread(target=process_and_send,args=(client,address,frames))
-                thread.start()
+                #thread=threading.Thread(target=process_and_send,args=(client,address,frames))
+                #thread.start()
             else:
                 print("发送结果0：")
                 client.send(bytes(str(0)+'\n',encoding='utf8'))

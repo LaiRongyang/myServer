@@ -1,4 +1,4 @@
-from aip import AipSpeech
+﻿from aip import AipSpeech
 from aip import AipNlp
 '''暂时不考虑error的情况'''
 '''文档地址http://ai.baidu.com/docs#/ASR-Online-Python-SDK/top
@@ -21,14 +21,17 @@ neutral:0.997434,pessimistic:0.0023148,optimistic:0.000251054'''
 '''标签顺序按概率顺序排列'''
 def get_wav_emotion(wav_path): 
     # 识别本地文件
-    text_result=get_text_client.asr(get_file_content('test.wav'), 'wav', 16000, {'dev_pid': 1536,})
+    text_result=get_text_client.asr(get_file_content(wav_path), 'wav', 16000, {'dev_pid': 1536,})
     #取返回结果的第一个
-    text_result=text_result['result'][0]
-    emotion_result=get_emoion_client.emotion(text_result)['items']
+    try:
+        text_result=text_result['result'][0]
+        emotion_result=get_emoion_client.emotion(text_result)['items']
     
-    return (emotion_result[0]['label']+':'+str(emotion_result[0]['prob'])+','+
-            emotion_result[1]['label']+':'+str(emotion_result[1]['prob'])+','+
-            emotion_result[2]['label']+':'+str(emotion_result[2]['prob']))
+        return (emotion_result[0]['label']+':'+str(emotion_result[0]['prob'])+','+
+                emotion_result[1]['label']+':'+str(emotion_result[1]['prob'])+','+
+                emotion_result[2]['label']+':'+str(emotion_result[2]['prob']))
+    except:
+        return ('')
 
     
 #print(get_wav_emotion('test.wav'))    
